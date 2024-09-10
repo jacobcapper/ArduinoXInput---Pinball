@@ -1,3 +1,9 @@
+Only forked for personal use / sharing pinball controller sketch using this library
+
+
+
+
+
 # Arduino XInput Library 
 [![arduino-library-badge](https://www.ardu-badge.com/badge/XInput.svg?)](https://www.ardu-badge.com/XInput) [![Build Status](https://github.com/dmadison/ArduinoXInput/workflows/build/badge.svg?branch=master)](https://github.com/dmadison/ArduinoXInput/actions?query=workflow%3Abuild)
 
