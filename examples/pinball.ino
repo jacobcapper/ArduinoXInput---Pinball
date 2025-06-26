@@ -29,16 +29,13 @@
 
 // Setup
 
-/*Depending on Pinball games you may want to change the Nudge to Right joystick.
-* If so just change Use UseLeftJoystick to false and UseRightJoystick to true and rename Pin_LeftJoyX + Y, JOY_LEFT and "Set Left joystick" sections to Pin_RightJoyX + Y, JOY_Right, etc
-*/
 const boolean UseLeftJoystick   = true;  // set to true to enable left joystick
 const boolean InvertLeftYAxis   = false;  // set to true to use inverted left joy Y
 
-const boolean UseRightJoystick  = false;  // set to true to enable right joystick
+const boolean UseRightJoystick  = true;  // set to true to enable right joystick
 const boolean InvertRightYAxis  = false;  // set to true to use inverted right joy Y
 
-const boolean UseTriggerButtons = false;   // set to false if using analog triggers
+const boolean UseTriggerButtons = true;   // set to false if using analog triggers
 
 const int ADC_Max = 1023;  // 10 bit
 
@@ -47,8 +44,8 @@ const int Pin_LeftJoyX = A3;
 const int Pin_LeftJoyY = A2;
 
 // Trigger Pins
-//const int Pin_TriggerL =;
-const int Pin_TriggerR = A1;
+const int Pin_TriggerL =10;
+/const int Pin_TriggerR = 15;
 
 // Button Pins
 const int Pin_ButtonA = 0;
@@ -62,8 +59,8 @@ const int Pin_ButtonRB = 4;
 const int Pin_ButtonBack  = 16;
 const int Pin_ButtonStart = 14; 
 
-const int Pin_ButtonL3 = 10;
-const int Pin_ButtonR3 = 15;
+//const int Pin_ButtonL3 = ;
+//const int Pin_ButtonR3 = ;
 
 // Directional Pad Pins
 const int Pin_DpadUp    = 9;
@@ -74,7 +71,7 @@ const int Pin_DpadRight = 7;
 void setup() {
 	// If using buttons for the triggers, use internal pull-up resistors
 	if (UseTriggerButtons == true) {
-		//pinMode(Pin_TriggerL, INPUT_PULLUP);
+		pinMode(Pin_TriggerL, INPUT_PULLUP);
 		pinMode(Pin_TriggerR, INPUT_PULLUP);
 	}
 	// If using potentiometers for the triggers, set range
@@ -102,9 +99,9 @@ void setup() {
 	pinMode(Pin_DpadLeft, INPUT_PULLUP);
 	pinMode(Pin_DpadRight, INPUT_PULLUP);
 
-  XInput.setRange(JOY_LEFT, 269, 430); // Use HTML5 Game Pad Tester to visualise nudge to stick emulation. Adjust these numbers until the stick is centred when still. https://github.com/Seeed-Studio/Accelerometer_ADXL335/blob/master/examples/Calibration/Calibration.ino will help with finding the max and min numbers.
+  	XInput.setRange(JOY_LEFT, 269, 430); // Use HTML5 Game Pad Tester to visualise nudge to stick emulation. Adjust these numbers until the stick is centred when still. https://github.com/Seeed-Studio/Accelerometer_ADXL335/blob/master/examples/Calibration/Calibration.ino will help with finding the max and min numbers.
+ 	XInput.setRange(JOY_RIGHT, 0, ADC_Max);
 	XInput.setAutoSend(false);  // Wait for all controls before sending
-
 	XInput.begin();
 }
 
@@ -122,8 +119,8 @@ void loop() {
 	boolean buttonBack  = !digitalRead(Pin_ButtonBack);
 	boolean buttonStart = !digitalRead(Pin_ButtonStart);
 
-	boolean buttonL3 = !digitalRead(Pin_ButtonL3);
-	boolean buttonR3 = !digitalRead(Pin_ButtonR3);
+	//boolean buttonL3 = !digitalRead(Pin_ButtonL3);
+	//boolean buttonR3 = !digitalRead(Pin_ButtonR3);
 
 	boolean dpadUp    = !digitalRead(Pin_DpadUp);
 	boolean dpadDown  = !digitalRead(Pin_DpadDown);
@@ -142,8 +139,8 @@ void loop() {
 	XInput.setButton(BUTTON_BACK, buttonBack);
 	XInput.setButton(BUTTON_START, buttonStart);
 
-	XInput.setButton(BUTTON_L3, buttonL3);
-	XInput.setButton(BUTTON_R3, buttonR3);
+	//XInput.setButton(BUTTON_L3, buttonL3);
+	//XInput.setButton(BUTTON_R3, buttonR3);
 
 	// Set XInput DPAD values
 	XInput.setDpad(dpadUp, dpadDown, dpadLeft, dpadRight);
@@ -151,38 +148,51 @@ void loop() {
 	// Set XInput trigger values
 	if (UseTriggerButtons == true) {
 		// Read trigger buttons
-		//boolean triggerLeft  = !digitalRead(Pin_TriggerL);
+		boolean triggerLeft  = !digitalRead(Pin_TriggerL);
 		boolean triggerRight = !digitalRead(Pin_TriggerR);
 
 		// Set the triggers as if they were buttons
-		//XInput.setButton(TRIGGER_LEFT, triggerLeft);
+		XInput.setButton(TRIGGER_LEFT, triggerLeft);
 		XInput.setButton(TRIGGER_RIGHT, triggerRight);
 	}
 	else {
 		// Read trigger potentiometer values
-		//int triggerLeft  = analogRead(Pin_TriggerL);
+		int triggerLeft  = analogRead(Pin_TriggerL);
 		int triggerRight = analogRead(Pin_TriggerR);
 
-    //triggerLeft = ADC_Max - triggerLeft;
+    triggerLeft = ADC_Max - triggerLeft;
     triggerRight = ADC_Max - triggerRight;
 
 		// Set the trigger values as analog
-		//XInput.setTrigger(TRIGGER_LEFT, triggerLeft);
+		XInput.setTrigger(TRIGGER_LEFT, triggerLeft);
 		XInput.setTrigger(TRIGGER_RIGHT, triggerRight);
 	}
 
  
-	// Set Left joystick
+		// Set left joystick
 	if (UseLeftJoystick == true) {
 		int leftJoyX = analogRead(Pin_LeftJoyX);
 		int leftJoyY = analogRead(Pin_LeftJoyY);
 
-		boolean invert = !InvertRightYAxis;
+		// White lie here... most generic joysticks are typically
+		// inverted by default. If the "Invert" variable is false
+		// then we'll take the opposite value with 'not' (!).
+		boolean invert = !InvertLeftYAxis;
 
 		XInput.setJoystickX(JOY_LEFT, leftJoyX);
 		XInput.setJoystickY(JOY_LEFT, leftJoyY, invert);
 	}
 
+	// Set right joystick
+	if (UseRightJoystick == true) {
+		int rightJoyX = analogRead(Pin_RightJoyX);
+		int rightJoyY = analogRead(Pin_RightJoyY);
+
+		boolean invert = !InvertRightYAxis;
+
+		XInput.setJoystickX(JOY_RIGHT, rightJoyX);
+		XInput.setJoystickY(JOY_RIGHT, rightJoyY, invert);
+	}
 	// Send control data to the computer
 	XInput.send();
 
